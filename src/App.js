@@ -1,20 +1,54 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "./App.css";
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import Header from "./components/Header";
+import Home from "./components/Home";
+import Checkout from "./components/Checkout";
+import Login from "./components/Login";
+import { useStateValue } from "./StateProvider";
+import { auth } from "./firebase";
 
 function App() {
+  const [{ user }, dispatch] = useStateValue();
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((authUser) => {
+      if (authUser) {
+        //logged into account
+        dispatch({
+          type: "SET_USER",
+          user: authUser,
+        });
+      } else {
+        //not logged into account
+        dispatch({
+          type: "SET_USER",
+          user: null,
+        });
+      }
+    });
+    return () => {
+      //cleanup
+      unsubscribe();
+    };
+  }, []);
+
+  console.log(user);
+
   return (
     <Router>
       <div className="app">
         <Switch>
-          <Route path="/checkout">
-            <h1>Checkout</h1>
+          <Route path={"/checkout"}>
+            <Header />
+            <Checkout />
           </Route>
           <Route path="/login">
-            <h1>Login</h1>
+            <Login />
           </Route>
           <Route path="/">
-            <h1>Amazon</h1>
+            <Header />
+            <Home />
           </Route>
         </Switch>
       </div>
